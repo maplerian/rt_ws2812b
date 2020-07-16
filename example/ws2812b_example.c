@@ -1,7 +1,18 @@
+/**! 
+ *
+ * @file           : /rt_ws2812b/example/ws2812b_example.c
+ *
+ * @date           : 2020-07-16 21:24:54
+ *
+ * @author         : maplerian
+ *
+ * @brief          : file content
+ *
+ */
 #include <ws2812.h>
 
 #ifndef WS2812B_EXAMPLE_SPI_NAME
-#define WS2812B_EXAMPLE_SPI_NAME    "spi1"
+#define WS2812B_EXAMPLE_SPI_NAME    "spi10"
 #endif  //!WS2812B_EXAMPLE_SPI_NAME
 
 #ifndef WS2812B_EXAMPLE_NODE_LENGTH
