@@ -37,7 +37,21 @@ RT-Thread online packages  --->
         -*- ws2812b: Ws2812b software driver package using SPI+DMA
 ```
 
-#### 3. 联系方式
+#### 3. 注意事项
+
+> SPI的通讯频率为 13.333Mhz， 因此， 每 2byte(MCU) == 1bit(ws2812b)。
+>
+> 1个ws2812b节点需要 2 x 8 x 3 = 48字节 因此，太多节点的人，请谨慎使用。
+>
+> SPI的通讯频率我测试过 2.5Mhz、3.333Mhz、6.666Mhz、13.333Mhz,
+>
+> 最终选择13.333Mhz的原因:这个相对来说比较稳定，但也是有一定的问题
+>
+> 比如：
+>
+> ​	当颜色值（大于0的值）小于10时，第一个节点的颜色会出现异常，其后的其它节点颜色正常
+
+#### 4. 联系方式
 
 - 维护：maplerian
 - 主页：<https://github.com/maplerian/rt_ws2812b>
