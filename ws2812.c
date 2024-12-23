@@ -8,10 +8,12 @@
 
 #include "ws2812.h"
 
+volatile uint8_t RGB_BIT_Buffer[OneNodeBuffLength];
 ws2812_t ws2812_create(char *spi_name, uint16_t led_node_length)
 {
     if (!spi_name || !led_node_length)
         return RT_NULL;
+
     struct rt_spi_device *spi = (struct rt_spi_device *)rt_device_find(spi_name);
     if (spi == RT_NULL)
         return RT_NULL;
@@ -25,10 +27,11 @@ ws2812_t ws2812_create(char *spi_name, uint16_t led_node_length)
     }
     //  配置 spi
     struct rt_spi_configuration ws2812_spi_config;
-    ws2812_spi_config.mode = RT_SPI_MASTER | RT_SPI_MODE_0 | RT_SPI_MSB; //  高位在前
-    ws2812_spi_config.max_hz = 13 * 1000 * 1000 + 333 * 1000;            //  200ns / bit => 8bit 1.6us => 1.25us < 1.6us < 1.85us 可行     6M 3b = 500ns 5b = 833ns
+    ws2812_spi_config.mode = RT_SPI_MASTER | RT_SPI_MODE_3 | RT_SPI_MSB; //  高位在前
+    ws2812_spi_config.max_hz = 6 * 1000 * 1000;                          // Ensure that the chip's clock frequency is 42 MHz.
     ws2812_spi_config.data_width = 8;
     rt_spi_configure((struct rt_spi_device *)spi, &ws2812_spi_config);
+
     //  赋值
     ws2812->spi = spi;
     ws2812->node_len = led_node_length;
@@ -42,40 +45,52 @@ void ws2812_clear_buff(ws2812_t ws2812)
     rt_memset(ws2812->buff, 0x00, OneNodeBuffLength * ws2812->node_len);
 }
 
-//  写颜色节点颜色到缓冲区  //  2byte == 1bit
-void ws2812_write_buff(uint8_t *buff, uint8_t r, uint8_t g, uint8_t b)
+static void ws2812_creat_data(uint8_t R, uint8_t G, uint8_t B)
 {
-    uint32_t rgb = g << 24 | r << 16 | b << 8;
-    uint8_t i = 24;
-    while (i--)
+    uint8_t temp[OneNodeBuffLength] = {0};
+    for (uint8_t i = 0; i < 8; i++)
     {
-        //  bit 1: 1111 1111 1110 0000
-        if (rgb & 0x80000000)
-        {
-            *buff++ = 0xff;
-            *buff++ = 0xe0;
-        }
-        //  bit 0: 1111 1000 0000 0000
-        else
-        {
-            *buff++ = 0xf8;
-            *buff++ = 0x00;
-        }
-        //  👆  bit 1: 11bit h, bit 0: 5bit h
-        rgb <<= 1;
+        temp[7 - i] = (G & 0x01) ? WS2812_1 : WS2812_0;
+        G = G >> 1;
+    }
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        temp[15 - i] = (R & 0x01) ? WS2812_1 : WS2812_0;
+        R = R >> 1;
+    }
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        temp[23 - i] = (B & 0x01) ? WS2812_1 : WS2812_0;
+        B = B >> 1;
+    }
+    memcpy((void *)RGB_BIT_Buffer, temp, OneNodeBuffLength);
+}
+
+void ws2812_write_rgb_to_node(ws2812_t ws2812, uint32_t color, uint16_t index)
+{
+    uint8_t R, G, B;
+    uint16_t i;
+
+    R = (color >> 16) & 0x00FF;
+    G = (color >> 8) & 0x0000FF;
+    B = (color) & 0x0000FF;
+
+    ws2812_creat_data(R, G, B);
+    if (index < ws2812->node_len && index >= 0)
+    {
+        memcpy((void *)(ws2812->buff + OneNodeBuffLength * index), (void *)RGB_BIT_Buffer, OneNodeBuffLength);
+    }
+    else
+    {
+        rt_kprintf("Error: index is out of range.\n");
     }
 }
 
-void ws2812_write_rgb_to_node(ws2812_t ws2812, uint16_t index, uint8_t r, uint8_t g, uint8_t b)
-{
-    ws2812_write_buff(&ws2812->buff[OneNodeBuffLength * index], r, g, b);
-}
-
-void ws2812_write_rgb_to_all(ws2812_t ws2812, uint8_t r, uint8_t g, uint8_t b)
+void ws2812_write_rgb_to_all(ws2812_t ws2812, uint32_t color)
 {
     uint16_t i;
     for (i = 0; i < ws2812->node_len; i++)
-        ws2812_write_rgb_to_node(ws2812, i, r, g, b);
+        ws2812_write_rgb_to_node(ws2812, color, i);
 }
 
 void ws2812_send(ws2812_t ws2812)
