@@ -40,6 +40,7 @@ RT-Thread online packages  --->
 #### 3. 注意事项
 
 > 1.cubeMX配置时请将主时钟配置为48MHz,其他频率请自行计算SPI速率。
+> 
 > 2.在board.h 中添加如下代码
 > ```
 > #define BSP_USING_SPIx
