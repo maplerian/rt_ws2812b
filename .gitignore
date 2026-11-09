@@ -1,0 +1,12 @@
+# Documentation build output
+/site/
+
+# Local CI reports
+/reports/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Generated STM32F407 CI worktrees and logs
+/_ci/

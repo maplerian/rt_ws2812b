@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "*.overlay": "dts",
-        "*.trigger_template": "kconfig",
-        "ws2812.h": "c",
-        "stdint.h": "c"
-    }
-}

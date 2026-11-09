@@ -1,0 +1,35 @@
+site_name: WS2812B SPI for RT-Thread
+site_description: Configurable multi-strip RT-Thread WS2812B driver and effects
+
+docs_dir: doc
+site_dir: site
+
+theme:
+  name: material
+  language: zh
+  features:
+    - navigation.sections
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - 灯效实拍演示: effects-demo.md
+  - Architecture: architecture.md
+  - Configuration and Porting: configuration.md
+  - WS2812B SPI Theory: ws2812b-spi-theory.md
+  - CI and GitHub Pages: ci.md
+
+markdown_extensions:
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
